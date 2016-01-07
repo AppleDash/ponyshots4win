@@ -29,15 +29,24 @@ namespace PonyShots4Win
                 Directory.CreateDirectory(BASE_PATH);
             }
 
-            try
+            if (File.Exists(CONFIG_FILE))
             {
-                config = Config.Parse(CONFIG_FILE);
+                try
+                {
+                    config = Config.Parse(CONFIG_FILE);
+                }
+                catch (Exception e)
+                {
+                    HandleError("Failed to parse config, loading defaults:", e);
+                    config = Config.Default();
+                    config.Save(CONFIG_FILE);
+                }
             }
-            catch (Exception e)
+            else
             {
-                HandleError("Failed to parse config, loading defaults:", e);
                 config = Config.Default();
                 config.Save(CONFIG_FILE);
+                MessageBox.Show("You had no config; I created a default one for you.\r\nYou probably want to edit '" + CONFIG_FILE + "'.", "PonyShots4Win");
             }
 
             ponyShots = new PonyShots();

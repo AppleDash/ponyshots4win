@@ -42,7 +42,7 @@ namespace PonyShots4Win
             psResp.Error = jValue.error;
 
             if (!psResp.Error)
-            {
+            {   
                 psResp.Slug = jValue.slug;
             }
             else
