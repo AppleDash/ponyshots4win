@@ -35,6 +35,7 @@
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDirBtn = new System.Windows.Forms.Button();
             this.quitBtn = new System.Windows.Forms.Button();
+            this.hideBtn = new System.Windows.Forms.Button();
             this.trayIconStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -64,7 +65,7 @@
             // 
             this.openDirBtn.Location = new System.Drawing.Point(12, 9);
             this.openDirBtn.Name = "openDirBtn";
-            this.openDirBtn.Size = new System.Drawing.Size(96, 23);
+            this.openDirBtn.Size = new System.Drawing.Size(159, 23);
             this.openDirBtn.TabIndex = 1;
             this.openDirBtn.Text = "Open Directory";
             this.openDirBtn.UseVisualStyleBackColor = true;
@@ -72,19 +73,30 @@
             // 
             // quitBtn
             // 
-            this.quitBtn.Location = new System.Drawing.Point(12, 38);
+            this.quitBtn.Location = new System.Drawing.Point(12, 67);
             this.quitBtn.Name = "quitBtn";
-            this.quitBtn.Size = new System.Drawing.Size(96, 23);
+            this.quitBtn.Size = new System.Drawing.Size(159, 23);
             this.quitBtn.TabIndex = 2;
             this.quitBtn.Text = "Quit";
             this.quitBtn.UseVisualStyleBackColor = true;
             this.quitBtn.Click += new System.EventHandler(this.quitBtn_Click);
             // 
+            // hideBtn
+            // 
+            this.hideBtn.Location = new System.Drawing.Point(12, 38);
+            this.hideBtn.Name = "hideBtn";
+            this.hideBtn.Size = new System.Drawing.Size(159, 23);
+            this.hideBtn.TabIndex = 3;
+            this.hideBtn.Text = "Hide";
+            this.hideBtn.UseVisualStyleBackColor = true;
+            this.hideBtn.Click += new System.EventHandler(this.hideBtn_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(120, 68);
+            this.ClientSize = new System.Drawing.Size(183, 98);
+            this.Controls.Add(this.hideBtn);
             this.Controls.Add(this.quitBtn);
             this.Controls.Add(this.openDirBtn);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -103,6 +115,7 @@
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.Button openDirBtn;
         private System.Windows.Forms.Button quitBtn;
+        private System.Windows.Forms.Button hideBtn;
     }
 }
 

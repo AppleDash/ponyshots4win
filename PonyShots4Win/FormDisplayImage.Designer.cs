@@ -1,6 +1,6 @@
 ﻿namespace PonyShots4Win
 {
-    partial class FormDisplayImage
+    sealed partial class FormDisplayImage
     {
         /// <summary>
         /// Required designer variable.

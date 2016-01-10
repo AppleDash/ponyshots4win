@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace PonyShots4Win
 {
-    public partial class FormDisplayImage : Form
+    public sealed partial class FormDisplayImage : Form
     {
         private enum State
         {
@@ -32,10 +32,19 @@ namespace PonyShots4Win
             get { return mouseDownPoint != mousePoint && SelectedBitmap != null; }
         }
 
-        public FormDisplayImage(Bitmap bmp)
+        public FormDisplayImage(Image bmp)
         {
             InitializeComponent();
-            this.BackgroundImage = bmp;
+            BackgroundImage = bmp;
+        }
+
+        public void SetScreen(Screen screen)
+        {
+            StartPosition = FormStartPosition.Manual;
+
+            var bounds = screen.Bounds;
+
+            SetBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         }
 
         private void FormDisplayImage_KeyDown(object sender, KeyEventArgs e)
@@ -55,10 +64,11 @@ namespace PonyShots4Win
 
         private void CropScreenShot()
         {
-            Point upperLeft = new Point(Math.Min(mouseDownPoint.X, mousePoint.X), Math.Min(mouseDownPoint.Y, mousePoint.Y));
-            Size sz = new Size(Math.Abs(mouseDownPoint.X - mousePoint.X), Math.Abs(mouseDownPoint.Y - mousePoint.Y));
-            Bitmap bitmap = new Bitmap(sz.Width, sz.Height);
-            using (Graphics g = Graphics.FromImage(bitmap))
+            var upperLeft = new Point(Math.Min(mouseDownPoint.X, mousePoint.X), Math.Min(mouseDownPoint.Y, mousePoint.Y));
+            var sz = new Size(Math.Abs(mouseDownPoint.X - mousePoint.X), Math.Abs(mouseDownPoint.Y - mousePoint.Y));
+            var bitmap = new Bitmap(sz.Width, sz.Height);
+
+            using (var g = Graphics.FromImage(bitmap))
             {
                 g.CopyFromScreen(upperLeft, Point.Empty, sz);
             }
