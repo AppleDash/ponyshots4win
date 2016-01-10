@@ -16,11 +16,12 @@ namespace PonyShots4Win
 {
     public partial class MainForm : Form
     {
-        private static string BASE_PATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "PonyShots");
-        private static string CONFIG_FILE = Path.Combine(BASE_PATH, "ponyshots4win.json");
-        private bool exiting = false;
-        private PonyShots ponyShots;
-        private Config config;
+        private static readonly string BASE_PATH = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "PonyShots");
+        private static readonly string CONFIG_FILE = Path.Combine(BASE_PATH, "ponyshots4win.json");
+        private bool _exiting = false;
+        private readonly PonyShots _ponyShots;
+        private readonly Config _config;
+        private readonly HotKeys _hotKeys;
 
         public MainForm()
         {
@@ -34,46 +35,55 @@ namespace PonyShots4Win
             {
                 try
                 {
-                    config = Config.Parse(CONFIG_FILE);
+                    _config = Config.Parse(CONFIG_FILE);
                 }
                 catch (Exception e)
                 {
-                    HandleError("Failed to parse config, loading defaults:", e);
-                    config = Config.Default();
-                    config.Save(CONFIG_FILE);
+                    HandleError("Failed to parse _config, loading defaults:", e);
+                    _config = Config.Default();
+                    _config.Save(CONFIG_FILE);
                 }
             }
             else
             {
-                config = Config.Default();
-                config.Save(CONFIG_FILE);
-                MessageBox.Show("You had no config; I created a default one for you.\r\nYou probably want to edit '" + CONFIG_FILE + "'.", "PonyShots4Win");
+                _config = Config.Default();
+                _config.Save(CONFIG_FILE);
+                MessageBox.Show($"You had no config; I created a default one for you.\r\nYou probably want to edit '{CONFIG_FILE}'.", "PonyShots4Win");
             }
 
-            ponyShots = new PonyShots
+            _ponyShots = new PonyShots
             {
-                UploadUrl = config.UploadUrl,
-                ImageBaseUrl = config.BaseUrl,
-                Username = config.Username,
-                ApiKey = config.ApiKey
+                UploadUrl = _config.UploadUrl,
+                ImageBaseUrl = _config.BaseUrl,
+                Username = _config.Username,
+                ApiKey = _config.ApiKey
             };
 
+            _hotKeys = new HotKeys(Handle);
+            _hotKeys.OnHotKey += this.OnHotKey;
+
+            foreach (var k in new Keys[] {Keys.D2, Keys.D3, Keys.D4, Keys.D5})
+            {
+                _hotKeys.RegisterHotKey(k, KeyModifier.Control | KeyModifier.Shift);
+            }
+
+            /*
             WinApi.RegisterHotKey(this.Handle, 0, ((int)KeyModifier.Control | (int)KeyModifier.Shift), Keys.D2.GetHashCode());
             WinApi.RegisterHotKey(this.Handle, 1, ((int)KeyModifier.Control | (int)KeyModifier.Shift), Keys.D3.GetHashCode());
             WinApi.RegisterHotKey(this.Handle, 2, ((int)KeyModifier.Control | (int)KeyModifier.Shift), Keys.D4.GetHashCode());
             WinApi.RegisterHotKey(this.Handle, 3, ((int)KeyModifier.Control | (int)KeyModifier.Shift), Keys.D5.GetHashCode());
-
+            */
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            exiting = true;
+            _exiting = true;
             this.Close();
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!this.exiting)
+            if (!this._exiting)
             {
                 e.Cancel = true;
                 this.Hide();
@@ -99,14 +109,14 @@ namespace PonyShots4Win
 
         private void UploadScreenshot(string filePath)
         {
-            var psResp = ponyShots.UploadScreenshot(filePath);
+            var psResp = _ponyShots.UploadScreenshot(filePath);
             if (psResp.Error)
             {
                 HandleError("An error occured on the server side when uploading that screenshot:\r\n" + psResp.ErrorMessage);
             }
             else
             {
-                var url = string.Format("{0}{1}", ponyShots.ImageBaseUrl, psResp.Slug);
+                var url = $"{_ponyShots.ImageBaseUrl}{psResp.Slug}";
 
                 Clipboard.SetText(url);
                 DisplayUploadedNotification(url);
@@ -120,7 +130,7 @@ namespace PonyShots4Win
 
         private void HandleError(string message, Exception cause)
         {
-            HandleError(string.Format("{0}\r\n{1}", message, cause.ToString()));
+            HandleError($"{message}\r\n{cause.ToString()}");
         }
 
         private Screen GetCurrentScreen()
@@ -136,11 +146,11 @@ namespace PonyShots4Win
             var gfxScreenshot = Graphics.FromImage(bmpScreenshot);
 
             gfxScreenshot.CopyFromScreen(curScreen.Bounds.X, curScreen.Bounds.Y, 0, 0, curScreen.Bounds.Size, CopyPixelOperation.SourceCopy);
-            bmpScreenshot.Save(screenshotPath + ".png", ImageFormat.Png);
+            bmpScreenshot.Save(screenshotPath, ImageFormat.Png);
 
             if (!shouldCrop)
             {
-                UploadScreenshot(screenshotPath + ".png");
+                UploadScreenshot(screenshotPath);
                 return;
             }
 
@@ -150,7 +160,7 @@ namespace PonyShots4Win
 
             if (formDisplayImage.HasSelection)
             {
-                var croppedImageName = screenshotPath + "-cropped.png";
+                var croppedImageName = Path.GetFileNameWithoutExtension(screenshotPath) + "-cropped.png";
                 formDisplayImage.SelectedBitmap.Save(croppedImageName, ImageFormat.Png);
 
                 UploadScreenshot(croppedImageName);
@@ -184,10 +194,9 @@ namespace PonyShots4Win
                 g.CopyFromScreen(upperLeft, Point.Empty, sz);
             }
 
-
             var screenshotPath = GenerateFilename();
-            bitmap.Save(screenshotPath + ".png", ImageFormat.Png);
-            UploadScreenshot(screenshotPath + ".png");
+            bitmap.Save(screenshotPath, ImageFormat.Png);
+            UploadScreenshot(screenshotPath);
         }
 
         private void UploadFromClipboard()
@@ -211,8 +220,8 @@ namespace PonyShots4Win
                     if (new string[] {".png", ".jpg", ".jpeg", ".gif"}.Contains(ext.ToLower()))
                     {
                         var img = Image.FromFile(imageFile);
-                        img.Save(screenshotPath + ".png");
-                        UploadScreenshot(screenshotPath + ".png");
+                        img.Save(screenshotPath);
+                        UploadScreenshot(screenshotPath);
                     }
                 }
 
@@ -223,18 +232,45 @@ namespace PonyShots4Win
         {
             var t = DateTime.UtcNow - new DateTime(1970, 1, 1);
             var secondsSinceEpoch = (int)t.TotalSeconds;
-            return Path.Combine(BASE_PATH, secondsSinceEpoch.ToString());
+
+            return Path.Combine(BASE_PATH, secondsSinceEpoch.ToString() + ".png");
+        }
+
+        public void OnHotKey(Keys k, KeyModifier modifier)
+        {
+            try
+            {
+                switch (k)
+                {
+                    case Keys.D2:
+                        this.PerformScreenshotCurrentWindow();
+                        break;
+                    case Keys.D3:
+                        this.PerformScreenshot(false);
+                        break;
+                    case Keys.D4:
+                        this.PerformScreenshot(true);
+                        break;
+                    case Keys.D5:
+                        this.UploadFromClipboard();
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                HandleError("Error occured taking a screenshot:", e);
+            }
         }
 
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
-
-            if (m.Msg == 0x0312)
+            _hotKeys?.WndProc(ref m);
+            /*if (m.Msg == 0x0312)
             {
                 var key = (Keys)(((int)m.LParam >> 16) & 0xFFFF);                  // The key of the hotkey that was pressed.
-                var modifier = (KeyModifier)((int)m.LParam & 0xFFFF);       // The modifier of the hotkey that was pressed.
-                var id = m.WParam.ToInt32();                                        // The id of the hotkey that was pressed.
+                var modifier = (KeyModifier)((int)m.LParam & 0xFFFF);              // The modifier of the hotkey that was pressed.
+                var id = m.WParam.ToInt32();                                       // The id of the hotkey that was pressed.
 
                 try
                 {
@@ -258,7 +294,8 @@ namespace PonyShots4Win
                 {
                     HandleError("Error occured taking a screenshot:", e);
                 }
-            }
+            }*/
+
         }
 
         private void openDirBtn_Click(object sender, EventArgs e)
@@ -268,7 +305,7 @@ namespace PonyShots4Win
 
         private void quitBtn_Click(object sender, EventArgs e)
         {
-            this.exiting = true;
+            this._exiting = true;
             this.Close();
         }
 

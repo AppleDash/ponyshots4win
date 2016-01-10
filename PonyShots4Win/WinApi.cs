@@ -21,6 +21,7 @@ namespace PonyShots4Win
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
     }
 
+    [Flags]
     public enum KeyModifier
     {
         None = 0,

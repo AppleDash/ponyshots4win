@@ -88,6 +88,7 @@
     <Compile Include="FormDisplayImage.Designer.cs">
       <DependentUpon>FormDisplayImage.cs</DependentUpon>
     </Compile>
+    <Compile Include="HotKeys.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -114,7 +115,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="PonyShots4Win_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
