@@ -20,7 +20,7 @@ At the moment, it simply runs in the background as a tray icon and allows you to
 The screenshot is then saved to `C:\Users\<your username>\My Pictures\PonyShots\` and uploaded to PonyShots.
 
 ## Known bugs
-* Bad HiDPI/4K support
+* Bad HiDPI/4K support - Possible workaround: Use compatability settings for Windows 7 and disable DPI scaling for this application.
 * Bad multimonitor support
 * Upload notifications don't seem to work outside of VS debug mode
 
